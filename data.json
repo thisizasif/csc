@@ -1,0 +1,42 @@
+{
+    "services": [
+        {
+            "id": 1,
+            "name": "AADHAAR Card ENROLLMENT WITH CHOICE OF DOB",
+            "category": "AADHAAR",
+            "requiredDocuments": [
+               "FATHER'S AADHAAR CARD",
+               "MOTHER'S AADHAAR CARD",
+               "SCHOOL BONAFIDE CERTIFICATE",
+               "PHYSICAL PRESENCE OF CHILD AND FATHER"
+            ],
+            "governmentFee": 1550,
+            "serviceCharge": 450,
+            "processingTime": "1-2 Working Days",
+            "notes": "CARRY MENTIONED DOCUMENTS IN ORIGINAL AND PHOTOCOPY. FATHER'S AADHAAR CARD IS MANDATORY FOR ENROLLMENT OF CHILD'S AADHAAR CARD."
+        },
+        {
+            "id": 2,
+            "name": "DOMICILE CERTIFICATE",
+            "category": "CERTIFICATES",
+            "requiredDocuments": [
+                "AADHAAR CARD",
+                "PHOTOGRAPH OF APPLICANT",
+                "FATHER'S AADHAAR CARD",
+                "RATION CARD E TICKET",
+                "BIRTH CERTIFICATE / SCHOOL DOB / SCHOOL MARKSHEET",
+                "PRC (IF AVAILABLE)"
+            ],
+            "governmentFee": 0,
+            "serviceCharge": 150,
+            "processingTime": "1-2 Working Days",
+            "notes": "PRC IS NOT MANDATORY "
+        }
+        
+    
+    ],
+    "categories": [
+        "AADHAAR",
+        "CERTIFICATES"
+    ]
+}

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>CSC Document Information System</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- QRCode.js for QR generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- External CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ===== PRELOADER ===== -->
+    <div class="preloader" id="preloader">
+        <div class="preloader-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+        </div>
+        <p>Loading Services...</p>
+    </div>
+
+    <div class="container" id="mainContent" style="display: none;">
+        <!-- ===== HEADER ===== -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div>
+                    <h1>CSC <span>Document</span></h1>
+                    <p class="tagline">Government Service Information Portal</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="header-stats">
+                    <span class="stat-badge" id="totalServices">
+                        <i class="fas fa-database"></i> 0 Services
+                    </span>
+                </div>
+                <button onclick="toggleDark()" id="darkModeBtn" class="action-btn">
+                    <i class="fas fa-moon"></i> 
+                    <span>Dark</span>
+                </button>
+                <button onclick="installPWA()" class="action-btn" id="installBtn" style="display:none;">
+                    <i class="fas fa-download"></i> Install
+                </button>
+            </div>
+        </header>
+
+        <!-- ===== KEYBOARD SHORTCUT HINT ===== -->
+        <div class="shortcut-hint">
+            <i class="fas fa-keyboard"></i> 
+            <kbd>Ctrl</kbd> + <kbd>L</kbd> to search &nbsp;|&nbsp; 
+            <kbd>Esc</kbd> to close
+        </div>
+
+        <!-- ===== SEARCH SECTION ===== -->
+        <div class="search-wrapper">
+            <div class="search-section">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search for any government service..." autocomplete="off">
+                <button class="voice-btn" onclick="startVoiceSearch()" aria-label="Voice Search">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="clear-btn" id="clearBtn" onclick="clearSearch()" aria-label="Clear Search">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+            <div class="search-hint">
+                <i class="fas fa-info-circle"></i> Search by service name, category, or document name
+            </div>
+        </div>
+
+        <!-- ===== SUGGESTIONS BOX ===== -->
+        <div class="suggestions-box" id="suggestionsBox">
+            <!-- Populated dynamically -->
+        </div>
+
+        <!-- ===== CATEGORIES ===== -->
+        <div class="category-section">
+            <div class="category-header">
+                <h3><i class="fas fa-tags"></i> Browse Categories</h3>
+                <span class="category-count" id="categoryCount">0 categories</span>
+            </div>
+            <div class="category-grid" id="categoryContainer">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <!-- ===== RECENTLY VIEWED ===== -->
+        <div class="recently-viewed" id="recentlyViewed">
+            <div class="recently-header">
+                <h4><i class="fas fa-history"></i> Recently Viewed</h4>
+            </div>
+            <div class="recently-grid" id="recentlyGrid">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+        <!-- ===== RESULTS ===== -->
+        <div class="results-header">
+            <div class="service-counter" id="serviceCounter">
+                <i class="fas fa-list-ul"></i> Loading services...
+            </div>
+            <div class="results-actions">
+                <button class="view-toggle active" onclick="toggleView('grid')" id="gridViewBtn">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="view-toggle" onclick="toggleView('list')" id="listViewBtn">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== SERVICE CARDS GRID ===== -->
+        <div class="service-grid" id="serviceGrid">
+            <!-- Populated dynamically -->
+        </div>
+
+        <!-- ===== LOAD MORE ===== -->
+        <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+            <button class="load-more-btn" onclick="loadMore()">
+                <i class="fas fa-chevron-down"></i> Load More Services
+            </button>
+        </div>
+
+        <!-- ===== DETAIL PANEL ===== -->
+        <div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+        <div class="detail-panel" id="detailPanel">
+            <button class="detail-close" onclick="closeDetail()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="detail-content">
+                <div class="detail-header">
+                    <div>
+                        <span class="detail-category" id="detailCategory">Category</span>
+                        <h2 id="detailName">Service Name</h2>
+                    </div>
+                    <div class="detail-actions">
+                        <button class="favorite-btn" onclick="toggleFavorite()" id="favoriteBtn" title="Add to favorites">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        <button class="share-btn" onclick="shareService()" title="Share this service">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <button class="qr-btn" onclick="toggleQR()" title="Show QR Code">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- QR Code Section -->
+                <div class="qr-section" id="qrSection" style="display:none;">
+                    <div class="qr-container">
+                        <div id="qrcode"></div>
+                        <div class="qr-actions">
+                            <button onclick="copyLink()"><i class="fas fa-copy"></i> Copy Link</button>
+                            <button onclick="downloadQR()"><i class="fas fa-download"></i> Download QR</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <span class="section-label">
+                        <i class="fas fa-file-signature"></i> Required Documents
+                    </span>
+                    <div class="checklist-container">
+                        <ul class="doc-list checklist" id="detailDocs">
+                            <!-- Populated dynamically -->
+                        </ul>
+                        <div class="checklist-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                            </div>
+                            <span class="progress-text" id="progressText">0/0 documents checked</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <span class="section-label">
+                        <i class="fas fa-money-bill-wave"></i> Fee Structure
+                    </span>
+                    <div class="fee-table">
+                        <div class="fee-item">
+                            <span class="label">Government Fee</span>
+                            <div class="value" id="detailGovFee">₹0</div>
+                        </div>
+                        <div class="fee-divider"></div>
+                        <div class="fee-item">
+                            <span class="label">Service Charge</span>
+                            <div class="value" id="detailSvcCharge">₹0</div>
+                        </div>
+                        <div class="fee-divider"></div>
+                        <div class="fee-item total">
+                            <span class="label">Total Payable</span>
+                            <div class="value" id="detailTotal">₹0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <span class="section-label">
+                        <i class="fas fa-clock"></i> Processing Time
+                    </span>
+                    <div>
+                        <span class="processing-badge" id="detailProcessing">
+                            <i class="far fa-clock"></i> Processing Time
+                        </span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <span class="section-label">
+                        <i class="fas fa-sticky-note"></i> Additional Notes
+                    </span>
+                    <div class="notes-box" id="detailNotes">
+                        📌 No additional notes available.
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <span class="section-label">
+                        <i class="fas fa-tools"></i> Actions
+                    </span>
+                    <div class="action-buttons">
+                        <button onclick="printDetail()" class="action-btn-primary">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                        <button onclick="downloadPDF()" class="action-btn-secondary">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button onclick="copyDetails()" class="action-btn-secondary">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button onclick="shareService()" class="action-btn-secondary">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMsg">Done</span>
+    </div>
+
+    <!-- ===== EXTERNAL JAVASCRIPT ===== -->
+    <script src="script.js"></script>
+</body>
+</html>
