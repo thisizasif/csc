@@ -31,9 +31,28 @@
             "serviceCharge": 150,
             "processingTime": "1-2 Working Days",
             "notes": "PRC IS NOT MANDATORY "
+        },
+           {
+            "id": 3,
+            "name": "MARRIAGE ASSISTANCE SCHEME",
+            "category": "SCHEMES",
+            "requiredDocuments": [
+                "UNMARRIED CERTIFICATE",
+                "DEPENDENCY CERTIFICATE",
+                "NIKKAHNAMA",
+                "NOC FROM SOCIAL WELFARE DEPARTMENT",
+                "SATHNAMA",
+                "AADHAAR CARD",
+                "BRIDE DOB PROOF",
+                "GROOM DOB PROOF"
+
+            ],
+            "governmentFee": 0,
+            "serviceCharge": 0,
+            "processingTime": "Na",
+            "notes": "THIS CAN BE APPLY BEFORE  OR AFTER 2 MONTHS OF MARRIAGE."
+            
         }
-        
-    
     ],
     "categories": [
         "AADHAAR",
