@@ -1,4 +1,4 @@
-// script.js - Complete JavaScript for CSC Document Information System
+// script.js - Complete JavaScript for MANTOO COMPUTERS
 
 // ===== DATA STORAGE =====
 let services = [];
@@ -12,8 +12,75 @@ let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
 let itemsPerPage = 12;
 let currentPage = 1;
 let allFilteredServices = [];
+let checklistState = JSON.parse(localStorage.getItem('checklistState') || '{}');
 
-// ===== LOAD DATA FROM JSON FILE =====
+// ===== LOGIN SYSTEM =====
+const VALID_USERNAME = 'asif';
+const VALID_PASSWORD = 'ip2091';
+
+function checkLoginStatus() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (isLoggedIn) {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        loadData();
+    } else {
+        document.getElementById('loginContainer').style.display = 'flex';
+        document.getElementById('mainContent').style.display = 'none';
+    }
+}
+
+function login() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const errorEl = document.getElementById('loginError');
+    
+    if (!username || !password) {
+        errorEl.textContent = 'Please enter both username and password';
+        errorEl.classList.add('show');
+        return;
+    }
+    
+    if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+        errorEl.classList.remove('show');
+        localStorage.setItem('isLoggedIn', 'true');
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        toast('Login successful! Welcome back.');
+        loadData();
+    } else {
+        errorEl.textContent = 'Invalid username or password. Please try again.';
+        errorEl.classList.add('show');
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+    }
+}
+
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('isLoggedIn');
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('loginContainer').style.display = 'flex';
+        document.getElementById('username').value = 'asif';
+        document.getElementById('password').value = 'ip2091';
+        document.getElementById('loginError').classList.remove('show');
+        toast('Logged out successfully');
+    }
+}
+
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.className = 'fas fa-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.className = 'fas fa-eye';
+    }
+}
+
+// ===== LOAD DATA =====
 async function loadData() {
     try {
         const response = await fetch('./data.json');
@@ -30,18 +97,16 @@ async function loadData() {
             categories = Array.from(uniqueCategories).sort();
         }
         
-        // Update total services stat
         document.getElementById('totalServices').innerHTML = 
             `<i class="fas fa-database"></i> ${services.length} Services`;
         document.getElementById('categoryCount').textContent = `${categories.length} categories`;
         
-        // Hide preloader
         setTimeout(() => {
             document.getElementById('preloader').classList.add('fade-out');
-            document.getElementById('mainContent').style.display = 'block';
         }, 500);
         
         renderCategories();
+        renderRecentlyViewed();
         applyFilters();
         toast('Data loaded successfully');
     } catch (error) {
@@ -49,14 +114,14 @@ async function loadData() {
         toast('Failed to load data. Using fallback data.');
         
         services = getFallbackData();
-        categories = ["Aadhaar", "PAN", "Certificates", "Passport", "Driving Licence", "Voter ID", "Banking", "Utility Bills", "PM Kisan", "Ayushman Bharat", "J&K Services", "Other Services"];
+        categories = ["AADHAAR", "CERTIFICATES", "SCHEMES"];
         
         setTimeout(() => {
             document.getElementById('preloader').classList.add('fade-out');
-            document.getElementById('mainContent').style.display = 'block';
         }, 500);
         
         renderCategories();
+        renderRecentlyViewed();
         applyFilters();
     }
 }
@@ -65,33 +130,33 @@ function getFallbackData() {
     return [
         {
             id: 1,
-            name: "PAN Card New",
-            category: "PAN",
-            requiredDocuments: ["Aadhaar Card", "Passport Size Photo", "Mobile Number", "Email ID", "Signature"],
-            governmentFee: 107,
-            serviceCharge: 100,
-            processingTime: "7-10 Working Days",
-            notes: "Carry original Aadhaar Card."
+            name: "AADHAAR Card ENROLLMENT WITH CHOICE OF DOB",
+            category: "AADHAAR",
+            requiredDocuments: ["FATHER'S AADHAAR CARD", "MOTHER'S AADHAAR CARD", "SCHOOL BONAFIDE CERTIFICATE", "PHYSICAL PRESENCE OF CHILD AND FATHER"],
+            governmentFee: 1550,
+            serviceCharge: 450,
+            processingTime: "1-2 Working Days",
+            notes: "CARRY MENTIONED DOCUMENTS IN ORIGINAL AND PHOTOCOPY. FATHER'S AADHAAR CARD IS MANDATORY FOR ENROLLMENT OF CHILD'S AADHAAR CARD."
         },
         {
             id: 2,
-            name: "Aadhaar Update",
-            category: "Aadhaar",
-            requiredDocuments: ["Aadhaar Card", "Proof of Address", "Phone Number"],
-            governmentFee: 50,
-            serviceCharge: 30,
-            processingTime: "3-5 Working Days",
-            notes: "Biometric verification may be required."
+            name: "DOMICILE CERTIFICATE",
+            category: "CERTIFICATES",
+            requiredDocuments: ["AADHAAR CARD", "PHOTOGRAPH OF APPLICANT", "FATHER'S AADHAAR CARD", "RATION CARD E TICKET", "BIRTH CERTIFICATE / SCHOOL DOB / SCHOOL MARKSHEET", "PRC (IF AVAILABLE)"],
+            governmentFee: 0,
+            serviceCharge: 150,
+            processingTime: "1-2 Working Days",
+            notes: "PRC IS NOT MANDATORY"
         },
         {
             id: 3,
-            name: "Passport Renewal",
-            category: "Passport",
-            requiredDocuments: ["Old Passport", "Address Proof", "Photograph", "Application Form"],
-            governmentFee: 1500,
-            serviceCharge: 200,
-            processingTime: "15-20 Working Days",
-            notes: "Police verification may apply."
+            name: "MARRIAGE ASSISTANCE SCHEME",
+            category: "SCHEMES",
+            requiredDocuments: ["UNMARRIED CERTIFICATE", "DEPENDENCY CERTIFICATE", "NIKKAHNAMA", "NOC FROM SOCIAL WELFARE DEPARTMENT", "SATHNAMA", "AADHAAR CARD", "BRIDE DOB PROOF", "GROOM DOB PROOF"],
+            governmentFee: 0,
+            serviceCharge: 0,
+            processingTime: "Na",
+            notes: "THIS CAN BE APPLY BEFORE OR AFTER 2 MONTHS OF MARRIAGE."
         }
     ];
 }
@@ -101,16 +166,28 @@ function renderCategories() {
     const container = document.getElementById('categoryContainer');
     container.innerHTML = `
         <div class="category-chip active" data-cat="all" onclick="filterByCategory('all')">
-            <i class="fas fa-th"></i> All
+            <span class="color-dot" style="background:#6b7280;"></span>
+            All
         </div>
     `;
     
+    const categoryColors = {
+        'AADHAAR': '#2563eb',
+        'CERTIFICATES': '#16a34a',
+        'SCHEMES': '#7c3aed'
+    };
+    
     categories.forEach(cat => {
         const count = services.filter(s => s.category === cat).length;
+        const color = categoryColors[cat] || '#6b7280';
         const chip = document.createElement('div');
         chip.className = 'category-chip';
         chip.dataset.cat = cat;
-        chip.innerHTML = `<i class="fas fa-tag"></i> ${cat} <span style="font-size:0.7rem;opacity:0.6;">(${count})</span>`;
+        chip.innerHTML = `
+            <span class="color-dot" style="background:${color};"></span>
+            ${cat} 
+            <span style="font-size:0.7rem;opacity:0.6;">(${count})</span>
+        `;
         chip.onclick = () => filterByCategory(cat);
         container.appendChild(chip);
     });
@@ -208,7 +285,7 @@ function renderServices(list) {
             `<span class="doc-tag">+${s.requiredDocuments.length - 3} more</span>` : '';
         
         return `
-            <div class="service-card" onclick="showDetail(${s.id})">
+            <div class="service-card" onclick="showDetail(${s.id})" data-tooltip="Click to view ${s.name}">
                 <div class="card-top">
                     <h3>${s.name}</h3>
                     <span class="cat-badge">${s.category}</span>
@@ -235,17 +312,38 @@ function toggleView(view) {
     renderServices(displayedServices);
 }
 
+// ===== RECENTLY VIEWED =====
+function addRecentlyViewed(serviceId) {
+    recentlyViewed = recentlyViewed.filter(id => id !== serviceId);
+    recentlyViewed.unshift(serviceId);
+    if (recentlyViewed.length > 5) recentlyViewed.pop();
+    localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+    renderRecentlyViewed();
+}
+
+function renderRecentlyViewed() {
+    const container = document.getElementById('recentlyGrid');
+    if (!container) return;
+    const ids = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    const recentServices = ids.map(id => services.find(s => s.id === id)).filter(Boolean);
+    if (recentServices.length === 0) {
+        container.innerHTML = '<span style="color:var(--gray-400);font-size:0.85rem;">No recently viewed services</span>';
+        return;
+    }
+    container.innerHTML = recentServices.map(s => `
+        <div class="recent-chip" onclick="showDetail(${s.id})" data-tooltip="Click to view ${s.name}">
+            ${s.name}
+        </div>
+    `).join('');
+}
+
 // ===== SHOW DETAIL PANEL =====
 function showDetail(id) {
     const s = services.find(ser => ser.id === id);
     if (!s) return;
     
     selectedService = s;
-    
-    recentlyViewed = recentlyViewed.filter(rid => rid !== id);
-    recentlyViewed.unshift(id);
-    if (recentlyViewed.length > 10) recentlyViewed.pop();
-    localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+    addRecentlyViewed(id);
     
     const panel = document.getElementById('detailPanel');
     const overlay = document.getElementById('detailOverlay');
@@ -253,10 +351,20 @@ function showDetail(id) {
     document.getElementById('detailCategory').textContent = s.category;
     document.getElementById('detailName').textContent = s.name;
     
+    // Render checklist
     const docList = document.getElementById('detailDocs');
-    docList.innerHTML = s.requiredDocuments.map(d => 
-        `<li><i class="fas fa-check-circle"></i> ${d}</li>`
-    ).join('');
+    docList.innerHTML = s.requiredDocuments.map((d, index) => {
+        const key = `${s.id}-${index}`;
+        const checked = checklistState[key] || false;
+        return `
+            <li class="checklist-item ${checked ? 'checked' : ''}" onclick="toggleChecklistItem(${s.id}, ${index})">
+                <span class="check-box"><i class="fas ${checked ? 'fa-check' : ''}"></i></span>
+                <span class="doc-text">${d}</span>
+            </li>
+        `;
+    }).join('');
+    
+    updateChecklistUI(s.id);
     
     document.getElementById('detailGovFee').textContent = `₹${s.governmentFee}`;
     document.getElementById('detailSvcCharge').textContent = `₹${s.serviceCharge}`;
@@ -285,6 +393,42 @@ function closeDetail() {
     document.getElementById('detailPanel').classList.remove('show');
     document.getElementById('detailOverlay').classList.remove('show');
     document.body.style.overflow = '';
+}
+
+// ===== CHECKLIST =====
+function toggleChecklistItem(serviceId, docIndex) {
+    const key = `${serviceId}-${docIndex}`;
+    checklistState[key] = !checklistState[key];
+    localStorage.setItem('checklistState', JSON.stringify(checklistState));
+    updateChecklistUI(serviceId);
+}
+
+function updateChecklistUI(serviceId) {
+    const items = document.querySelectorAll(`#detailDocs .checklist-item`);
+    let checked = 0;
+    items.forEach((item, index) => {
+        const key = `${serviceId}-${index}`;
+        const isChecked = checklistState[key] || false;
+        const checkBox = item.querySelector('.check-box i');
+        if (isChecked) {
+            item.classList.add('checked');
+            checkBox.className = 'fas fa-check';
+            checked++;
+        } else {
+            item.classList.remove('checked');
+            checkBox.className = 'fas';
+        }
+    });
+    const total = items.length;
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    if (progressFill) {
+        const percentage = total > 0 ? (checked / total) * 100 : 0;
+        progressFill.style.width = `${percentage}%`;
+    }
+    if (progressText) {
+        progressText.textContent = `${checked}/${total} documents checked`;
+    }
 }
 
 // ===== TOGGLE FAVORITE =====
@@ -399,7 +543,104 @@ function startVoiceSearch() {
     toast('Listening... Speak now');
 }
 
-// ===== UPDATED PRINT DETAIL =====
+// ===== QR CODE =====
+let qrGenerated = false;
+
+function toggleQR() {
+    const section = document.getElementById('qrSection');
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        if (!qrGenerated) {
+            generateQR();
+        }
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+function generateQR() {
+    if (!selectedService) return;
+    const url = window.location.href.split('?')[0] + `?service=${selectedService.id}`;
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+    new QRCode(qrContainer, {
+        text: url,
+        width: 150,
+        height: 150,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    qrGenerated = true;
+}
+
+function copyLink() {
+    if (!selectedService) return;
+    const url = window.location.href.split('?')[0] + `?service=${selectedService.id}`;
+    navigator.clipboard.writeText(url)
+        .then(() => toast('Link copied to clipboard!'))
+        .catch(() => toast('Failed to copy link'));
+}
+
+function downloadQR() {
+    const qrCanvas = document.querySelector('#qrcode canvas');
+    if (!qrCanvas) return toast('Generate QR first');
+    const link = document.createElement('a');
+    link.download = `${selectedService.name}-QR.png`;
+    link.href = qrCanvas.toDataURL('image/png');
+    link.click();
+    toast('QR code downloaded');
+}
+
+// ===== SHARE SERVICE =====
+function shareService() {
+    if (!selectedService) {
+        toast('Please select a service first');
+        return;
+    }
+    
+    const s = selectedService;
+    const shareText = `${s.name} (${s.category})\nDocuments Required: ${s.requiredDocuments.join(', ')}\nProcessing Time: ${s.processingTime || 'N/A'}\nContact: 8082042836\n\nPowered by MANTOO COMPUTERS`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: s.name,
+            text: shareText,
+            url: window.location.href
+        }).catch((err) => {
+            if (err.name !== 'AbortError') {
+                copyShareText(shareText);
+            }
+        });
+    } else {
+        copyShareText(shareText);
+    }
+}
+
+function copyShareText(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            toast('Service details copied! Share with anyone.');
+        })
+        .catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                toast('Service details copied! Share with anyone.');
+            } catch (e) {
+                toast('Failed to share. Please copy manually.');
+            }
+            document.body.removeChild(textarea);
+        });
+}
+
+// ===== PRINT DETAIL =====
 function printDetail() {
     if (!selectedService) {
         toast('Please select a service first');
@@ -408,11 +649,7 @@ function printDetail() {
     
     const s = selectedService;
     const win = window.open('', '_blank');
-    
-    // Generate numbered documents list
-    const numberedDocs = s.requiredDocuments.map((doc, index) => 
-        `${index + 1}. ${doc}`
-    ).join('\n');
+    const hasNotes = s.notes && s.notes.trim() !== '' && s.notes !== 'No additional notes available.' && s.notes !== 'No additional notes.';
     
     win.document.write(`
         <!DOCTYPE html>
@@ -421,234 +658,67 @@ function printDetail() {
                 <title>${s.name} - Service Details</title>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
                 <style>
-                    * {
-                        margin: 0;
-                        padding: 0;
-                        box-sizing: border-box;
-                    }
-                    body {
-                        font-family: 'Times New Roman', Georgia, serif;
-                        padding: 40px;
-                        max-width: 900px;
-                        margin: 0 auto;
-                        background: white;
-                        color: #1a1a1a;
-                        line-height: 1.6;
-                    }
-                    .print-header {
-                        text-align: center;
-                        padding-bottom: 20px;
-                        border-bottom: 3px double #1a1a1a;
-                        margin-bottom: 25px;
-                    }
-                    .print-header h1 {
-                        font-size: 28px;
-                        letter-spacing: 1px;
-                        font-weight: bold;
-                        text-transform: uppercase;
-                        color: #1a1a1a;
-                    }
-                    .print-header .subtitle {
-                        font-size: 14px;
-                        color: #555;
-                        margin-top: 5px;
-                        letter-spacing: 2px;
-                    }
-                    .print-header .service-name {
-                        font-size: 22px;
-                        margin-top: 10px;
-                        font-weight: 600;
-                        color: #1a1a1a;
-                    }
-                    .print-header .category {
-                        display: inline-block;
-                        background: #f0f0f0;
-                        padding: 4px 20px;
-                        border-radius: 20px;
-                        font-size: 13px;
-                        margin-top: 8px;
-                        color: #555;
-                        letter-spacing: 1px;
-                    }
-                    .print-section {
-                        margin-bottom: 25px;
-                        padding: 15px 0;
-                        border-bottom: 1px solid #e0e0e0;
-                    }
-                    .print-section:last-child {
-                        border-bottom: none;
-                    }
-                    .print-section-title {
-                        font-size: 16px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 1px;
-                        color: #1a1a1a;
-                        margin-bottom: 12px;
-                        padding-bottom: 5px;
-                        border-bottom: 2px solid #1a1a1a;
-                    }
-                    .doc-item {
-                        padding: 6px 0;
-                        font-size: 15px;
-                        display: flex;
-                        align-items: baseline;
-                        gap: 8px;
-                    }
-                    .doc-item .doc-number {
-                        font-weight: 700;
-                        color: #1a1a1a;
-                        min-width: 30px;
-                    }
-                    .doc-item .doc-text {
-                        color: #1a1a1a;
-                    }
-                    .fee-hidden {
-                        display: none !important;
-                    }
-                    .fee-print-note {
-                        text-align: center;
-                        padding: 12px;
-                        background: #f8f8f8;
-                        border: 1px dashed #999;
-                        border-radius: 8px;
-                        color: #666;
-                        font-style: italic;
-                        font-size: 14px;
-                    }
-                    .processing-time {
-                        display: inline-block;
-                        background: #f0f0f0;
-                        padding: 6px 24px;
-                        border-radius: 20px;
-                        font-weight: 500;
-                        font-size: 15px;
-                    }
-                    .notes-content {
-                        padding: 12px 16px;
-                        background: #f9f9f9;
-                        border-left: 4px solid #1a1a1a;
-                        border-radius: 4px;
-                        font-size: 15px;
-                    }
-                    .print-footer {
-                        margin-top: 30px;
-                        padding-top: 20px;
-                        border-top: 2px solid #1a1a1a;
-                        text-align: center;
-                        font-size: 13px;
-                    }
-                    .print-footer .company-name {
-                        font-size: 16px;
-                        font-weight: 700;
-                        letter-spacing: 1px;
-                        color: #1a1a1a;
-                    }
-                    .print-footer .contact {
-                        margin-top: 5px;
-                        color: #555;
-                    }
-                    .print-footer .copyright {
-                        margin-top: 8px;
-                        color: #777;
-                        font-size: 12px;
-                    }
-                    .print-watermark {
-                        position: fixed;
-                        bottom: 30px;
-                        right: 30px;
-                        opacity: 0.1;
-                        font-size: 60px;
-                        font-weight: bold;
-                        color: #1a1a1a;
-                        transform: rotate(-15deg);
-                        pointer-events: none;
-                    }
-                    @media print {
-                        .print-watermark {
-                            display: block;
-                        }
-                        .fee-hidden {
-                            display: none !important;
-                        }
-                        .no-print {
-                            display: none !important;
-                        }
-                    }
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: 'Times New Roman', Georgia, serif; padding: 40px; max-width: 900px; margin: 0 auto; background: white; color: #1a1a1a; line-height: 1.6; }
+                    .print-header { text-align: center; padding-bottom: 20px; border-bottom: 3px double #1a1a1a; margin-bottom: 25px; }
+                    .print-header h1 { font-size: 28px; letter-spacing: 1px; font-weight: bold; text-transform: uppercase; color: #1a1a1a; }
+                    .print-header .subtitle { font-size: 14px; color: #555; margin-top: 5px; letter-spacing: 2px; }
+                    .print-header .service-name { font-size: 22px; margin-top: 10px; font-weight: 600; color: #1a1a1a; }
+                    .print-header .category { display: inline-block; background: #f0f0f0; padding: 4px 20px; border-radius: 20px; font-size: 13px; margin-top: 8px; color: #555; letter-spacing: 1px; }
+                    .print-section { margin-bottom: 25px; padding: 15px 0; border-bottom: 1px solid #e0e0e0; }
+                    .print-section:last-child { border-bottom: none; }
+                    .print-section-title { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a1a1a; margin-bottom: 12px; padding-bottom: 5px; border-bottom: 2px solid #1a1a1a; }
+                    .doc-item { padding: 6px 0; font-size: 15px; display: flex; align-items: baseline; gap: 8px; }
+                    .doc-item .doc-number { font-weight: 700; color: #1a1a1a; min-width: 30px; }
+                    .fee-hidden { display: none !important; }
+                    .fee-print-note { text-align: center; padding: 12px; background: #f8f8f8; border: 1px dashed #999; border-radius: 8px; color: #666; font-style: italic; font-size: 14px; }
+                    .processing-time { display: inline-block; background: #f0f0f0; padding: 6px 24px; border-radius: 20px; font-weight: 500; font-size: 15px; }
+                    .notes-content { padding: 12px 16px; background: #f9f9f9; border-left: 4px solid #1a1a1a; border-radius: 4px; font-size: 15px; }
+                    .print-footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #1a1a1a; text-align: center; font-size: 13px; }
+                    .print-footer .company-name { font-size: 16px; font-weight: 700; letter-spacing: 1px; color: #1a1a1a; }
+                    .print-footer .contact { margin-top: 5px; color: #555; }
+                    .print-footer .copyright { margin-top: 8px; color: #777; font-size: 12px; }
+                    .print-watermark { position: fixed; bottom: 30px; right: 30px; opacity: 0.1; font-size: 60px; font-weight: bold; color: #1a1a1a; transform: rotate(-15deg); pointer-events: none; }
+                    .hidden-print { display: none !important; }
+                    @media print { .print-watermark { display: block; } .fee-hidden { display: none !important; } .hidden-print { display: none !important; } }
                 </style>
             </head>
             <body>
                 <div class="print-watermark">CSC</div>
-                
                 <div class="print-header">
                     <h1>MANTOO COMPUTERS</h1>
                     <div class="subtitle">DOCUMENTS REQUIRED</div>
                     <div class="service-name">${s.name}</div>
                     <span class="category">${s.category}</span>
                 </div>
-
                 <div class="print-section">
-                    <div class="print-section-title">
-                        <i class="fas fa-file-signature"></i> Required Documents
-                    </div>
+                    <div class="print-section-title"><i class="fas fa-file-signature"></i> Required Documents</div>
                     ${s.requiredDocuments.map((doc, index) => `
-                        <div class="doc-item">
-                            <span class="doc-number">${index + 1}.</span>
-                            <span class="doc-text">${doc}</span>
-                        </div>
+                        <div class="doc-item"><span class="doc-number">${index + 1}.</span><span class="doc-text">${doc}</span></div>
                     `).join('')}
                 </div>
-
                 <div class="print-section">
-                    <div class="print-section-title">
-                        <i class="fas fa-clock"></i> Processing Time
-                    </div>
+                    <div class="print-section-title"><i class="fas fa-clock"></i> Processing Time</div>
                     <div class="processing-time">${s.processingTime || 'N/A'}</div>
                 </div>
-
-                <div class="print-section">
-                    <div class="print-section-title">
-                        <i class="fas fa-sticky-note"></i> Additional Notes
-                    </div>
-                    <div class="notes-content">${s.notes || 'No additional notes available.'}</div>
+                <div class="print-section ${!hasNotes ? 'hidden-print' : ''}">
+                    <div class="print-section-title"><i class="fas fa-sticky-note"></i> Additional Notes</div>
+                    <div class="notes-content">${hasNotes ? s.notes : ''}</div>
                 </div>
-
                 <div class="print-section fee-hidden">
-                    <div class="print-section-title">
-                        <i class="fas fa-money-bill-wave"></i> Fee Structure
-                    </div>
+                    <div class="print-section-title"><i class="fas fa-money-bill-wave"></i> Fee Structure</div>
                     <div style="display:flex;gap:40px;flex-wrap:wrap;padding:10px 0;">
-                        <div>
-                            <div style="font-size:13px;color:#666;">Government Fee</div>
-                            <div style="font-size:18px;font-weight:bold;">₹${s.governmentFee}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:13px;color:#666;">Service Charge</div>
-                            <div style="font-size:18px;font-weight:bold;">₹${s.serviceCharge}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:13px;color:#666;">Total Payable</div>
-                            <div style="font-size:22px;font-weight:bold;color:#16a34a;">₹${s.governmentFee + s.serviceCharge}</div>
-                        </div>
+                        <div><div style="font-size:13px;color:#666;">Government Fee</div><div style="font-size:18px;font-weight:bold;">₹${s.governmentFee}</div></div>
+                        <div><div style="font-size:13px;color:#666;">Service Charge</div><div style="font-size:18px;font-weight:bold;">₹${s.serviceCharge}</div></div>
+                        <div><div style="font-size:13px;color:#666;">Total Payable</div><div style="font-size:22px;font-weight:bold;color:#16a34a;">₹${s.governmentFee + s.serviceCharge}</div></div>
                     </div>
                 </div>
-
-                <div class="fee-print-note">
-                    <i class="fas fa-info-circle"></i> Fee details are confidential and not displayed in this printout. Please contact the MANTOO COMPUTERS for fee information.
-                </div>
-
+                <div class="fee-print-note"><i class="fas fa-info-circle"></i> Fee details are confidential and not displayed in this printout. Please contact MANTOO COMPUTERS for fee information.</div>
                 <div class="print-footer">
                     <div class="company-name">MANTOO COMPUTERS</div>
-                    <div class="contact">
-                        <i class="fas fa-phone"></i> 8082042836 &nbsp;|&nbsp; 
-                        <i class="fas fa-envelope"></i> cscfeeripora@gmail.com
-                    </div>
-                    <div class="copyright">
-                        &copy; ${new Date().getFullYear()} MANTOO COMPUTERS. All Rights Reserved.
-                    </div>
-                    <div style="margin-top:8px;font-size:11px;color:#999;">
-                        Printed on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                    </div>
+                    <div class="contact"><i class="fas fa-phone"></i> 8082042836 &nbsp;|&nbsp; <i class="fas fa-envelope"></i> cscfeeripora@gmail.com</div>
+                    <div class="copyright">&copy; ${new Date().getFullYear()} MANTOO COMPUTERS. All Rights Reserved.</div>
+                    <div style="margin-top:8px;font-size:11px;color:#999;">Printed on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
             </body>
         </html>
@@ -703,23 +773,6 @@ ${'═'.repeat(50)}
         .catch(() => toast('Failed to copy. Please try again.'));
 }
 
-// ===== SHARE DETAILS =====
-function shareDetails() {
-    if (!selectedService) {
-        toast('Please select a service first');
-        return;
-    }
-    
-    if (navigator.share) {
-        navigator.share({
-            title: selectedService.name,
-            text: `${selectedService.name} - Category: ${selectedService.category}\nDocuments: ${selectedService.requiredDocuments.join(', ')}\nContact: 8082042836`
-        }).catch(() => {});
-    } else {
-        copyDetails();
-    }
-}
-
 // ===== DARK MODE =====
 function toggleDark() {
     document.body.classList.toggle('dark');
@@ -754,27 +807,57 @@ function toast(msg) {
     }, 3000);
 }
 
-// ===== KEYBOARD NAVIGATION =====
+// ===== KEYBOARD SHORTCUTS =====
 document.addEventListener('keydown', function(e) {
+    // Ctrl + L to focus search
+    if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault();
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+            toast('Search focused');
+        }
+    }
+    
+    // Escape to close
     if (e.key === 'Escape') {
         closeDetail();
         document.getElementById('suggestionsBox').style.display = 'none';
     }
     
+    // Enter for login
     if (e.key === 'Enter') {
-        const suggestions = document.querySelectorAll('.suggestion-item');
-        if (suggestions.length > 0) {
-            const firstSuggestion = suggestions[0];
-            const onclickAttr = firstSuggestion.getAttribute('onclick');
-            if (onclickAttr) {
-                const match = onclickAttr.match(/\d+/);
-                if (match) {
-                    selectSuggestion(parseInt(match[0]));
-                }
-            }
+        const loginContainer = document.getElementById('loginContainer');
+        if (loginContainer.style.display !== 'none') {
+            login();
         }
     }
 });
+
+// ===== PWA INSTALL =====
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn').style.display = 'flex';
+});
+
+function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                toast('App installed successfully!');
+                document.getElementById('installBtn').style.display = 'none';
+            } else {
+                toast('Installation cancelled');
+            }
+            deferredPrompt = null;
+        });
+    }
+}
 
 // ===== LOAD DARK MODE PREFERENCE =====
 if (localStorage.getItem('darkMode') === 'true') {
@@ -784,271 +867,10 @@ if (localStorage.getItem('darkMode') === 'true') {
     button.querySelector('span').textContent = 'Light';
 }
 
-// ===== UPDATED PRINT DETAIL - HIDES NOTES SECTION IF EMPTY =====
-function printDetail() {
-    if (!selectedService) {
-        toast('Please select a service first');
-        return;
-    }
-    
-    const s = selectedService;
-    const win = window.open('', '_blank');
-    
-    // Check if notes exist and are not empty
-    const hasNotes = s.notes && s.notes.trim() !== '' && s.notes !== 'No additional notes available.' && s.notes !== 'No additional notes.';
-    
-    win.document.write(`
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <title>${s.name} - Service Details</title>
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-                <style>
-                    * {
-                        margin: 0;
-                        padding: 0;
-                        box-sizing: border-box;
-                    }
-                    body {
-                        font-family: 'Times New Roman', Georgia, serif;
-                        padding: 40px;
-                        max-width: 900px;
-                        margin: 0 auto;
-                        background: white;
-                        color: #1a1a1a;
-                        line-height: 1.6;
-                    }
-                    .print-header {
-                        text-align: center;
-                        padding-bottom: 20px;
-                        border-bottom: 3px double #1a1a1a;
-                        margin-bottom: 25px;
-                    }
-                    .print-header h1 {
-                        font-size: 28px;
-                        letter-spacing: 1px;
-                        font-weight: bold;
-                        text-transform: uppercase;
-                        color: #1a1a1a;
-                    }
-                    .print-header .subtitle {
-                        font-size: 14px;
-                        color: #555;
-                        margin-top: 5px;
-                        letter-spacing: 2px;
-                    }
-                    .print-header .service-name {
-                        font-size: 22px;
-                        margin-top: 10px;
-                        font-weight: 600;
-                        color: #1a1a1a;
-                    }
-                    .print-header .category {
-                        display: inline-block;
-                        background: #f0f0f0;
-                        padding: 4px 20px;
-                        border-radius: 20px;
-                        font-size: 13px;
-                        margin-top: 8px;
-                        color: #555;
-                        letter-spacing: 1px;
-                    }
-                    .print-section {
-                        margin-bottom: 25px;
-                        padding: 15px 0;
-                        border-bottom: 1px solid #e0e0e0;
-                    }
-                    .print-section:last-child {
-                        border-bottom: none;
-                    }
-                    .print-section-title {
-                        font-size: 16px;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        letter-spacing: 1px;
-                        color: #1a1a1a;
-                        margin-bottom: 12px;
-                        padding-bottom: 5px;
-                        border-bottom: 2px solid #1a1a1a;
-                    }
-                    .doc-item {
-                        padding: 6px 0;
-                        font-size: 15px;
-                        display: flex;
-                        align-items: baseline;
-                        gap: 8px;
-                    }
-                    .doc-item .doc-number {
-                        font-weight: 700;
-                        color: #1a1a1a;
-                        min-width: 30px;
-                    }
-                    .doc-item .doc-text {
-                        color: #1a1a1a;
-                    }
-                    .fee-hidden {
-                        display: none !important;
-                    }
-                    .fee-print-note {
-                        text-align: center;
-                        padding: 12px;
-                        background: #f8f8f8;
-                        border: 1px dashed #999;
-                        border-radius: 8px;
-                        color: #666;
-                        font-style: italic;
-                        font-size: 14px;
-                    }
-                    .processing-time {
-                        display: inline-block;
-                        background: #f0f0f0;
-                        padding: 6px 24px;
-                        border-radius: 20px;
-                        font-weight: 500;
-                        font-size: 15px;
-                    }
-                    .notes-content {
-                        padding: 12px 16px;
-                        background: #f9f9f9;
-                        border-left: 4px solid #1a1a1a;
-                        border-radius: 4px;
-                        font-size: 15px;
-                    }
-                    .print-footer {
-                        margin-top: 30px;
-                        padding-top: 20px;
-                        border-top: 2px solid #1a1a1a;
-                        text-align: center;
-                        font-size: 13px;
-                    }
-                    .print-footer .company-name {
-                        font-size: 16px;
-                        font-weight: 700;
-                        letter-spacing: 1px;
-                        color: #1a1a1a;
-                    }
-                    .print-footer .contact {
-                        margin-top: 5px;
-                        color: #555;
-                    }
-                    .print-footer .copyright {
-                        margin-top: 8px;
-                        color: #777;
-                        font-size: 12px;
-                    }
-                    .print-watermark {
-                        position: fixed;
-                        bottom: 30px;
-                        right: 30px;
-                        opacity: 0.1;
-                        font-size: 60px;
-                        font-weight: bold;
-                        color: #1a1a1a;
-                        transform: rotate(-15deg);
-                        pointer-events: none;
-                    }
-                    .hidden-print {
-                        display: none !important;
-                    }
-                    @media print {
-                        .print-watermark {
-                            display: block;
-                        }
-                        .fee-hidden {
-                            display: none !important;
-                        }
-                        .no-print {
-                            display: none !important;
-                        }
-                        .hidden-print {
-                            display: none !important;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="print-watermark">CSC</div>
-                
-                <div class="print-header">
-                    <h1>MANTOO COMPUTERS</h1>
-                    <div class="subtitle">DOCUMENTS REQUIRED</div>
-                    <div class="service-name">${s.name}</div>
-                    <span class="category">${s.category}</span>
-                </div>
-
-                <div class="print-section">
-                    <div class="print-section-title">
-                        <i class="fas fa-file-signature"></i> Required Documents
-                    </div>
-                    ${s.requiredDocuments.map((doc, index) => `
-                        <div class="doc-item">
-                            <span class="doc-number">${index + 1}.</span>
-                            <span class="doc-text">${doc}</span>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div class="print-section">
-                    <div class="print-section-title">
-                        <i class="fas fa-clock"></i> Processing Time
-                    </div>
-                    <div class="processing-time">${s.processingTime || 'N/A'}</div>
-                </div>
-
-                <!-- Notes Section - Only shown if notes exist -->
-                <div class="print-section ${!hasNotes ? 'hidden-print' : ''}">
-                    <div class="print-section-title">
-                        <i class="fas fa-sticky-note"></i> Additional Notes
-                    </div>
-                    <div class="notes-content">${hasNotes ? s.notes : ''}</div>
-                </div>
-
-                <div class="print-section fee-hidden">
-                    <div class="print-section-title">
-                        <i class="fas fa-money-bill-wave"></i> Fee Structure
-                    </div>
-                    <div style="display:flex;gap:40px;flex-wrap:wrap;padding:10px 0;">
-                        <div>
-                            <div style="font-size:13px;color:#666;">Government Fee</div>
-                            <div style="font-size:18px;font-weight:bold;">₹${s.governmentFee}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:13px;color:#666;">Service Charge</div>
-                            <div style="font-size:18px;font-weight:bold;">₹${s.serviceCharge}</div>
-                        </div>
-                        <div>
-                            <div style="font-size:13px;color:#666;">Total Payable</div>
-                            <div style="font-size:22px;font-weight:bold;color:#16a34a;">₹${s.governmentFee + s.serviceCharge}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="fee-print-note">
-                    <i class="fas fa-info-circle"></i> Fee details are confidential and not displayed in this printout. Please contact the MANTOO COMPUTERS for fee information.
-                </div>
-
-                <div class="print-footer">
-                    <div class="company-name">MANTOO COMPUTERS</div>
-                    <div class="contact">
-                        <i class="fas fa-phone"></i> 8082042836 &nbsp;|&nbsp; 
-                        <i class="fas fa-envelope"></i> cscfeeripora@gmail.com
-                    </div>
-                    <div class="copyright">
-                        &copy; ${new Date().getFullYear()} MANTOO COMPUTERS. All Rights Reserved.
-                    </div>
-                    <div style="margin-top:8px;font-size:11px;color:#999;">
-                        Printed on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} at ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                </div>
-            </body>
-        </html>
-    `);
-    win.document.close();
-    setTimeout(() => {
-        win.print();
-    }, 500);
-}
-
 // ===== INITIALIZE APPLICATION =====
-loadData();
-console.log('CSC Document Information System v2.0 initialized');
+document.addEventListener('DOMContentLoaded', function() {
+    checkLoginStatus();
+});
+
+console.log('MANTOO COMPUTERS - Service Information Portal v3.0');
+console.log('Login credentials: asif / ip2091');

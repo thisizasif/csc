@@ -50,11 +50,27 @@
             "serviceCharge": 0,
             "processingTime": "Na",
             "notes": "THIS CAN BE APPLY BEFORE OR AFTER 2 MONTHS OF MARRIAGE."
+        },
+        {
+            "id": 4,
+            "name": "LEARNING LICENSE MCWG",
+            "category": "LICENSES",
+            "requiredDocuments": [
+                "AADHAAR CARD",
+                "MOBILE NUMBER LINKED WITH AADHAAR",
+                "SIGNATURE OF APPLICANT",
+                "BLOOD GROUP"
+            ],
+            "governmentFee": 200,
+            "serviceCharge": 150,
+            "processingTime": "SAME DAY",
+            "notes": "THIS SERVICE IS FOR LEARNING LICENSE OF MCWG ONLY. FOR PERMANENT LICENSE, YOU NEED TO APPLY AFTER 30 DAYS OF LEARNING LICENSE."
         }
     ],
     "categories": [
         "AADHAAR",
         "CERTIFICATES",
-        "SCHEMES"
+        "SCHEMES",
+        "LICENSES"
     ]
 }

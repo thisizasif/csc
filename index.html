@@ -17,8 +17,40 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg.png" />
 </head>
 <body>
+    <!-- ===== LOGIN SCREEN ===== -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-logo">
+                <i class="fas fa-file-alt"></i>
+                <h1>MANTOO <span>COMPUTERS</span></h1>
+                <p>Service Information Portal</p>
+            </div>
+            <div class="login-form">
+                <div class="login-error" id="loginError">Invalid username or password</div>
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Username" autocomplete="off" value="">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Password" value="">
+                    <button class="toggle-password" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+                <button class="login-btn" onclick="login()">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <div class="login-footer">
+                    <span>&copy; 2024 MANTOO COMPUTERS</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== PRELOADER ===== -->
     <div class="preloader" id="preloader">
         <div class="preloader-spinner">
@@ -38,7 +70,7 @@
                 </div>
                 <div>
                     <h1>MANTOO <span>COMPUTERS</span></h1>
-                    <p class="tagline"> Service Information Portal</p>
+                    <p class="tagline">Service Information Portal</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -53,6 +85,9 @@
                 </button>
                 <button onclick="installPWA()" class="action-btn" id="installBtn" style="display:none;">
                     <i class="fas fa-download"></i> Install
+                </button>
+                <button onclick="logout()" class="action-btn" style="background:#dc2626;color:white;border-color:#dc2626;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
         </header>
