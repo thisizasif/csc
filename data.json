@@ -65,7 +65,27 @@
             "serviceCharge": 150,
             "processingTime": "SAME DAY",
             "notes": "THIS SERVICE IS FOR LEARNING LICENSE OF MCWG ONLY. FOR PERMANENT LICENSE, YOU NEED TO APPLY AFTER 30 DAYS OF LEARNING LICENSE."
-        }
+        },
+        {
+    "id": 5,
+    "name": "OLD AGE PENSION",
+    "category": "SCHEMES",
+    "requiredDocuments": [
+        "Residential Proof - Voter ID Card",
+        "Affidavit attested by Judicial Magistrate 1st Class that she/he is not in receipt of any pension/financial assistance from any other source",
+        "Age Proof - Birth Certificate by Medical Board",
+        "Aadhar Card (Both Sides)",
+        "Domicile Certificate",
+        "Ration Card (Inner & Outer Both)",
+        "Bank Passbook",
+        "Previous Bank Passbook",
+        "Consent Form for Aadhaar Seeding of the Bank Account"
+    ],
+    "governmentFee": 0,
+    "serviceCharge": 200,
+    "processingTime": "7-15 Working Days",
+    "notes": "All documents must be self-attested. Original documents required for verification. Apply at local Tehsil office or CSC center."
+}
     ],
     "categories": [
         "AADHAAR",
